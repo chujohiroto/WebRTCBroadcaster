@@ -1,3 +1,6 @@
+/// Copyright (c) 2018 Pion
+/// https://github.com/pion/webrtc
+
 package signal
 
 import "github.com/pion/randutil"

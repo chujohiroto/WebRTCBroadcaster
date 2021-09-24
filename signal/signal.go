@@ -1,3 +1,6 @@
+/// Copyright (c) 2018 Pion
+/// https://github.com/pion/webrtc
+
 // Package signal contains helpers to exchange the SDP session
 // description between examples.
 package signal
