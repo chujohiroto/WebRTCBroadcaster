@@ -15,7 +15,6 @@ import (
 	"os"
 	oss "os/signal"
 	"strconv"
-	"strings"
 	"syscall"
 	"time"
 )
@@ -25,8 +24,8 @@ func main() {
 	isViewPage := flag.Bool("page", true, "テストで閲覧するためのWebページを表示する")
 	webPort := flag.Int("webport", 8080, "テストで閲覧するためのWebページを表示するポート")
 	isDummy := flag.Bool("dummy", false, "カメラデバイスを使わず、ダミー映像で配信する")
-	width := flag.Int("width", 1080, "カメラデバイスから取得する解像度の幅")
-	height := flag.Int("height", 1920, "カメラデバイスから取得する解像度の高さ")
+	width := flag.Int("width", 1920, "カメラデバイスから取得する解像度の幅")
+	height := flag.Int("height", 1080, "カメラデバイスから取得する解像度の高さ")
 	sdpPort := flag.Int("sdpport", 8888, "SDPを受け付けるHTTP Serverのポート")
 
 	flag.Parse()
@@ -45,20 +44,20 @@ func main() {
 	if *isViewPage {
 		go func() {
 			log.Println("Testで閲覧するためのHTTP Serverを起動")
-			http.ListenAndServe(":"+strconv.Itoa(*webPort), http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				if strings.HasPrefix(r.URL.Path, "/") {
-					http.FileServer(http.Dir("html")).ServeHTTP(w, r)
-				} else {
-					http.NotFound(w, r)
-				}
-			}))
 
+			srv := http.FileServer(http.Dir("html"))
+			http.Handle("/", srv)
+
+			err := http.ListenAndServe(":"+strconv.Itoa(*webPort), nil)
+			if err != nil {
+				panic(err)
+			}
 		}()
 	}
 
 	go func() {
 		for {
-			newPeerSDP := <- offerChan
+			newPeerSDP := <-offerChan
 
 			log.Println("New SDF Offer")
 
@@ -79,7 +78,7 @@ func main() {
 	oss.Notify(quit, syscall.SIGTERM, os.Interrupt)
 	log.Printf("SIGNAL %d received, then shutting down...\n", <-quit)
 
-	_, cancel := context.WithTimeout(context.Background(), 5 * time.Second)
+	_, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
 	// Shutdown処理を書く コンテキストを渡した場合、5秒以内に終了しない場合は処理がキャンセルされる
@@ -93,7 +92,7 @@ func main() {
 
 }
 
-func startHTTPSDPServer(port int) chan string{
+func startHTTPSDPServer(port int) chan string {
 	sdpChan := signal.HTTPSDPServer(port)
 
 	log.Println("SDPを受け付けるHTTP Serverを起動")
@@ -101,7 +100,7 @@ func startHTTPSDPServer(port int) chan string{
 	return sdpChan
 }
 
-func onConnect(sdp string) (*webrtc.PeerConnection, error)  {
+func onConnect(sdp string) (*webrtc.PeerConnection, error) {
 	offer := webrtc.SessionDescription{}
 	err := signal.Decode(sdp, &offer)
 	if err != nil {
