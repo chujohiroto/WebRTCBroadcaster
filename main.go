@@ -4,20 +4,30 @@ import (
 	"WebRTCBroadcaster/camera"
 	"WebRTCBroadcaster/dummy"
 	"WebRTCBroadcaster/signal"
+	"context"
 	"flag"
 	"fmt"
 	"github.com/pion/mediadevices"
 	"github.com/pion/webrtc/v3"
 	"image/jpeg"
+	"log"
+	"net/http"
 	"os"
+	oss "os/signal"
+	"strconv"
+	"strings"
+	"syscall"
+	"time"
 )
 
 func main() {
 	// Args
+	isViewPage := flag.Bool("page", true, "テストで閲覧するためのWebページを表示する")
+	webPort := flag.Int("webport", 8080, "テストで閲覧するためのWebページを表示するポート")
 	isDummy := flag.Bool("dummy", false, "カメラデバイスを使わず、ダミー映像で配信する")
 	width := flag.Int("width", 1080, "カメラデバイスから取得する解像度の幅")
 	height := flag.Int("height", 1920, "カメラデバイスから取得する解像度の高さ")
-	port := flag.Int("port", 8080, "SDPを受け付けるHTTP Serverのポート")
+	sdpPort := flag.Int("sdpport", 8888, "SDPを受け付けるHTTP Serverのポート")
 
 	flag.Parse()
 
@@ -30,15 +40,51 @@ func main() {
 		fmt.Println("カメラデバイスから映像を取得")
 	}
 
-	offerChan := startHTTPSDPServer(*port)
+	offerChan := startHTTPSDPServer(*sdpPort)
 
-	for {
-		newPeerSDP := <- offerChan
+	go func() {
+		for {
+			newPeerSDP := <- offerChan
 
-		connection := onConnect(newPeerSDP)
+			connection := onConnect(newPeerSDP)
 
-		connection.AddTrack(track)
+			connection.AddTrack(track)
+		}
+	}()
+
+	if *isViewPage {
+		fs := http.StripPrefix("/", http.FileServer(http.Dir("html")))
+		go func() {
+			err := http.ListenAndServe(":"+strconv.Itoa(*webPort), http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				if strings.HasPrefix(r.URL.Path, "/") {
+					fs.ServeHTTP(w, r)
+				} else {
+					http.NotFound(w, r)
+				}
+			}))
+
+			if err != nil {
+				log.Fatalln(err.Error())
+			}
+		}()
 	}
+
+	quit := make(chan os.Signal, 1)
+	oss.Notify(quit, syscall.SIGTERM, os.Interrupt)
+	log.Printf("SIGNAL %d received, then shutting down...\n", <-quit)
+
+	_, cancel := context.WithTimeout(context.Background(), 5 * time.Second)
+	defer cancel()
+
+	// Shutdown処理を書く コンテキストを渡した場合、5秒以内に終了しない場合は処理がキャンセルされる
+	err := track.Close()
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	log.Println("Server shutdown")
+
 }
 
 func startHTTPSDPServer(port int) chan string{
