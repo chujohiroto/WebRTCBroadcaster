@@ -1,20 +1,34 @@
-<div id="signalingContainer" style="display: none">
-    Browser base64 Session Description<br />
-    <textarea id="localSessionDescription" readonly="true"></textarea> <br />
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>WebRTC Broadcaster Viewer</title>
+    <script type="text/javascript" src="index.js"></script>
+</head>
 
-    Golang base64 Session Description<br />
-    <textarea id="remoteSessionDescription"></textarea> <br/>
-    <button onclick="window.startSession()"> Start Session </button><br />
-</div>
+<body>
+    <div id="signalingContainer" style="display: none">
+        Browser base64 Session Description<br />
+        <textarea id="localSessionDescription" readonly="true"></textarea> <br />
 
-<br />
+        Golang base64 Session Description<br />
+        <textarea id="remoteSessionDescription"></textarea> <br/>
+        <button onclick="window.startSession()"> Start Session </button><br />
+    </div>
 
-Video<br />
-<video id="video1" width="160" height="120" autoplay muted></video> <br />
+    <br />
 
-<button class="createSessionButton" onclick="window.createSession()"> Watch Broadcast </button><br />
+    Video<br />
+    <video id="video1" width="160" height="120" autoplay muted></video> <br />
 
-<br />
+    <button class="createSessionButton" onclick="window.createSession()"> Watch Broadcast </button><br />
 
-Logs<br />
-<div id="logs"></div>
+    <br />
+
+    Logs<br />
+    <div id="logs"></div>
+</body>
+</html>
