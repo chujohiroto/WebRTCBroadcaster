@@ -1,20 +1,31 @@
 package main
 
 import (
+	"WebRTCBroadcaster/camera"
+	"WebRTCBroadcaster/dummy"
 	"WebRTCBroadcaster/signal"
+	"flag"
 	"fmt"
 	"github.com/pion/mediadevices"
-	"github.com/pion/mediadevices/pkg/codec/x264"
-	//_ "github.com/pion/mediadevices/pkg/driver/camera"
-	 _ "github.com/pion/mediadevices/pkg/driver/videotest"
-	"github.com/pion/mediadevices/pkg/prop"
 	"github.com/pion/webrtc/v3"
 	"image/jpeg"
 	"os"
 )
 
 func main() {
-	track := getCameraVideoTrack()
+	// Args
+	isDummy := flag.Bool("dummy", false, "カメラデバイスを使わず、ダミー映像で配信するか")
+	width := flag.Int("width", 1080, "カメラデバイスから取得する解像度の幅")
+	height := flag.Int("height", 1920, "カメラデバイスから取得する解像度の高さ")
+
+	flag.Parse()
+
+	var track *mediadevices.VideoTrack
+	if *isDummy {
+		track = dummy.GetCameraVideoTrack(*width, *height)
+	} else {
+		track = camera.GetCameraVideoTrack(*width, *height)
+	}
 
 	offerChan := startHTTPSDPServer
 
@@ -25,30 +36,6 @@ func main() {
 
 		connection.AddTrack(track)
 	}
-}
-
-func getCameraVideoTrack() *mediadevices.VideoTrack {
-	x264Params, _ := x264.NewParams()
-	x264Params.Preset = x264.PresetMedium
-	x264Params.BitRate = 1_000_000 // 1mbps
-
-	codecSelector := mediadevices.NewCodecSelector(
-		mediadevices.WithVideoEncoders(&x264Params),
-	)
-
-	cameraMediaStream, _ := mediadevices.GetUserMedia(mediadevices.MediaStreamConstraints{
-		Video: func(c *mediadevices.MediaTrackConstraints) {
-			c.Width = prop.Int(1920)
-			c.Height = prop.Int(1080)
-		},
-		Codec: codecSelector,
-
-	})
-
-	track := cameraMediaStream.GetVideoTracks()[0]
-	videoTrack := track.(*mediadevices.VideoTrack)
-
-	return videoTrack
 }
 
 func startHTTPSDPServer() chan string{
