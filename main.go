@@ -17,20 +17,23 @@ func main() {
 	isDummy := flag.Bool("dummy", false, "カメラデバイスを使わず、ダミー映像で配信する")
 	width := flag.Int("width", 1080, "カメラデバイスから取得する解像度の幅")
 	height := flag.Int("height", 1920, "カメラデバイスから取得する解像度の高さ")
+	port := flag.Int("port", 8080, "SDPを受け付けるHTTP Serverのポート")
 
 	flag.Parse()
 
 	var track *mediadevices.VideoTrack
 	if *isDummy {
 		track = dummy.GetCameraVideoTrack(*width, *height)
+		fmt.Println("ダミー映像を取得")
 	} else {
 		track = camera.GetCameraVideoTrack(*width, *height)
+		fmt.Println("カメラデバイスから映像を取得")
 	}
 
-	offerChan := startHTTPSDPServer
+	offerChan := startHTTPSDPServer(*port)
 
 	for {
-		newPeerSDP := <- offerChan()
+		newPeerSDP := <- offerChan
 
 		connection := onConnect(newPeerSDP)
 
@@ -38,8 +41,10 @@ func main() {
 	}
 }
 
-func startHTTPSDPServer() chan string{
-	sdpChan := signal.HTTPSDPServer()
+func startHTTPSDPServer(port int) chan string{
+	sdpChan := signal.HTTPSDPServer(port)
+
+	fmt.Println("SDPを受け付けるHTTP Serverを起動")
 
 	return sdpChan
 }
