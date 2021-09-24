@@ -34,23 +34,13 @@ func main() {
 	var track *mediadevices.VideoTrack
 	if *isDummy {
 		track = dummy.GetCameraVideoTrack(*width, *height)
-		fmt.Println("ダミー映像を取得")
+		log.Println("ダミー映像を取得")
 	} else {
 		track = camera.GetCameraVideoTrack(*width, *height)
-		fmt.Println("カメラデバイスから映像を取得")
+		log.Println("カメラデバイスから映像を取得")
 	}
 
 	offerChan := startHTTPSDPServer(*sdpPort)
-
-	go func() {
-		for {
-			newPeerSDP := <- offerChan
-
-			connection := onConnect(newPeerSDP)
-
-			connection.AddTrack(track)
-		}
-	}()
 
 	if *isViewPage {
 		fs := http.StripPrefix("/", http.FileServer(http.Dir("html")))
@@ -66,8 +56,24 @@ func main() {
 			if err != nil {
 				log.Fatalln(err.Error())
 			}
+
+			log.Println("Testで閲覧するためのHTTP Serverを起動")
 		}()
 	}
+
+	go func() {
+		for {
+			newPeerSDP := <- offerChan
+
+			log.Println("New SDF Offer")
+
+			connection := onConnect(newPeerSDP)
+
+			log.Println("Connected")
+
+			connection.AddTrack(track)
+		}
+	}()
 
 	quit := make(chan os.Signal, 1)
 	oss.Notify(quit, syscall.SIGTERM, os.Interrupt)
@@ -90,7 +96,7 @@ func main() {
 func startHTTPSDPServer(port int) chan string{
 	sdpChan := signal.HTTPSDPServer(port)
 
-	fmt.Println("SDPを受け付けるHTTP Serverを起動")
+	log.Println("SDPを受け付けるHTTP Serverを起動")
 
 	return sdpChan
 }
