@@ -45,7 +45,8 @@ func main() {
 	if *isViewPage {
 		fs := http.StripPrefix("/", http.FileServer(http.Dir("html")))
 		go func() {
-			err := http.ListenAndServe(":"+strconv.Itoa(*webPort), http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			log.Println("Testで閲覧するためのHTTP Serverを起動")
+			http.ListenAndServe(":"+strconv.Itoa(*webPort), http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				if strings.HasPrefix(r.URL.Path, "/") {
 					fs.ServeHTTP(w, r)
 				} else {
@@ -53,11 +54,6 @@ func main() {
 				}
 			}))
 
-			if err != nil {
-				log.Fatalln(err.Error())
-			}
-
-			log.Println("Testで閲覧するためのHTTP Serverを起動")
 		}()
 	}
 
