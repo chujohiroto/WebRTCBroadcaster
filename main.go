@@ -14,7 +14,7 @@ import (
 
 func main() {
 	// Args
-	isDummy := flag.Bool("dummy", false, "カメラデバイスを使わず、ダミー映像で配信するか")
+	isDummy := flag.Bool("dummy", false, "カメラデバイスを使わず、ダミー映像で配信する")
 	width := flag.Int("width", 1080, "カメラデバイスから取得する解像度の幅")
 	height := flag.Int("height", 1920, "カメラデバイスから取得する解像度の高さ")
 
