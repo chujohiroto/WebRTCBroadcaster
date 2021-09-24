@@ -63,7 +63,12 @@ func main() {
 
 			log.Println("New SDF Offer")
 
-			connection := onConnect(newPeerSDP)
+			connection, err := onConnect(newPeerSDP)
+
+			if err != nil {
+				log.Println(err.Error())
+				continue
+			}
 
 			log.Println("Connected")
 
@@ -97,9 +102,12 @@ func startHTTPSDPServer(port int) chan string{
 	return sdpChan
 }
 
-func onConnect(sdp string) *webrtc.PeerConnection  {
+func onConnect(sdp string) (*webrtc.PeerConnection, error)  {
 	offer := webrtc.SessionDescription{}
-	signal.Decode(sdp, &offer)
+	err := signal.Decode(sdp, &offer)
+	if err != nil {
+		return nil, err
+	}
 
 	peerConnectionConfig := webrtc.Configuration{
 		ICEServers: []webrtc.ICEServer{
@@ -111,7 +119,7 @@ func onConnect(sdp string) *webrtc.PeerConnection  {
 
 	peerConnection, err := webrtc.NewPeerConnection(peerConnectionConfig)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 	defer func() {
 		if cErr := peerConnection.Close(); cErr != nil {
@@ -121,24 +129,24 @@ func onConnect(sdp string) *webrtc.PeerConnection  {
 
 	err = peerConnection.SetRemoteDescription(offer)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	answer, err := peerConnection.CreateAnswer(nil)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	gatherComplete := webrtc.GatheringCompletePromise(peerConnection)
 
 	err = peerConnection.SetLocalDescription(answer)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	<-gatherComplete
 
-	return peerConnection
+	return peerConnection, nil
 }
 
 // GetCameraFrame 現在のカメラの1フレームを取得する
