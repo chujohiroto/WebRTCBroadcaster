@@ -43,12 +43,11 @@ func main() {
 	offerChan := startHTTPSDPServer(*sdpPort)
 
 	if *isViewPage {
-		fs := http.StripPrefix("/", http.FileServer(http.Dir("html")))
 		go func() {
 			log.Println("Testで閲覧するためのHTTP Serverを起動")
 			http.ListenAndServe(":"+strconv.Itoa(*webPort), http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				if strings.HasPrefix(r.URL.Path, "/") {
-					fs.ServeHTTP(w, r)
+					http.FileServer(http.Dir("html")).ServeHTTP(w, r)
 				} else {
 					http.NotFound(w, r)
 				}
