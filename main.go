@@ -148,6 +148,8 @@ func onConnect(offer *webrtc.SessionDescription, track *mediadevices.VideoTrack,
 		return nil, err
 	}
 
+	track, api = dummy.GetCameraVideoTrack(1920, 1080)
+
 	// Video周り設定
 	track.OnEnded(func(err error) {
 		fmt.Printf("Track (ID: %s) ended with error: %v\n", track.ID(), err)
@@ -164,7 +166,6 @@ func onConnect(offer *webrtc.SessionDescription, track *mediadevices.VideoTrack,
 	}
 
 	// Answer送信
-
 	err = peerConnection.SetRemoteDescription(*offer)
 	if err != nil {
 		return nil, err
