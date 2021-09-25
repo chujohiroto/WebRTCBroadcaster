@@ -21,7 +21,8 @@ window.createSession = () => {
     pc.addTransceiver('video')
     pc.createOffer()
         .then(async d => {
-            pc.setLocalDescription(d)
+            console.log(d)
+            await pc.setLocalDescription(d)
             await postData("http://localhost:8888/sdp", d)
         })
         .catch(log)
