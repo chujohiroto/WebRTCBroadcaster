@@ -38,15 +38,15 @@ func main() {
 	var api *webrtc.API
 
 	if *isDummy {
-		track, api = dummy.GetCameraVideoTrack(*width, *height)
+		//track, api = dummy.GetCameraVideoTrack(*width, *height)
 		log.Println("ダミー映像を取得")
 	} else {
-		track, api = camera.GetCameraVideoTrack(*width, *height)
+		//track, api = camera.GetCameraVideoTrack(*width, *height)
 		log.Println("カメラデバイスから映像を取得")
 	}
 
 	if track == nil {
-		panic("Get Camera Video Track Nil")
+		//panic("Get Camera Video Track Nil")
 	}
 
 	// HTTPのハンドル周り定義
