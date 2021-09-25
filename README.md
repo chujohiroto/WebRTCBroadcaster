@@ -4,15 +4,31 @@ WebRTCでカメラ映像(H.264)を複数人に配信するソフトウェア　R
 ## 機能
 
 ## 実行方法
-```
-./WebRTCBroadcaster --help
+```shell
+./WebRTCBroadcaster -dummy -h
 Usage of ./WebRTCBroadcaster:
   -dummy
-    カメラデバイスを使わず、ダミー映像で配信する
+        カメラデバイスを使わず、ダミー映像で配信する
   -height int
-    カメラデバイスから取得する解像度の高さ (default 1920)
+        カメラデバイスから取得する解像度の高さ (default 1080)
+  -page
+        テストで閲覧するためのWebページを表示する (default true)
+  -port int
+        シグナリングやテストで閲覧するためのWebページを表示するポート (default 8080)
+  -webhook string
+        認証WebHookのURL
   -width int
-    カメラデバイスから取得する解像度の幅 (default 1080)
+        カメラデバイスから取得する解像度の幅 (default 1920)
+```
+
+**ダミー映像での実行例**
+```shell
+./WebRTCBroadcaster -dummy -page -webhook http://localhost:8888/auth
+```
+
+**カメラから映像取得、認証Webhookありでの実行例**
+```shell
+./WebRTCBroadcaster -page -webhook http://localhost:8888/auth
 ```
 
 ## ビルド方法
@@ -21,7 +37,7 @@ Usage of ./WebRTCBroadcaster:
 **ハードウェアエンコーダが必要な場合は、Rasberry Piでビルドしてください。**
 
 ### Raspberry Pi
-```
+```shell
 sudo apt install pkg-config
 
 go build
@@ -30,8 +46,7 @@ go build
 ```
 
 ### Ubuntu
-
-```
+```shell
 sudo apt install pkg-config
 
 sudo apt install libx264-dev
