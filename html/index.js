@@ -23,7 +23,9 @@ window.createSession = () => {
         .then(async d => {
             console.log(d)
             await pc.setLocalDescription(d)
-            await postData("/sdp", btoa(JSON.stringify(pc.localDescription)))
+            var answer = await postData("/sdp", btoa(JSON.stringify(pc.localDescription)))
+
+            console.log(answer)
         })
         .catch(log)
 
@@ -70,5 +72,6 @@ async function postData(url = '', data = {}) {
         referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
         body: JSON.stringify(data) // 本文のデータ型は "Content-Type" ヘッダーと一致する必要があります
     })
-    return response.json(); // レスポンスの JSON を解析
+
+    return response.text(); // レスポンスの JSON を解析
 }
