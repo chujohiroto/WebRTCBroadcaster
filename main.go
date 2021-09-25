@@ -59,6 +59,13 @@ func main() {
 		log.Println("API Call Get PhotoImage " + r.RemoteAddr)
 	})
 
+	mux.HandleFunc("/api/movie", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		w.Header().Set("Content-Type", "video/mp4")
+		GetCameraMovie(track, w)
+		log.Println("API Call Get PhotoImage " + r.RemoteAddr)
+	})
+
 	// HTTPサーバー起動
 	go func() {
 		log.Println("HTTP Serverを起動　Port:" + strconv.Itoa(*port))
@@ -198,4 +205,9 @@ func GetCameraFrame(videoTrack *mediadevices.VideoTrack, w io.Writer) {
 	defer release()
 
 	jpeg.Encode(w, frame, nil)
+}
+
+// GetCameraMovie 指定された秒数分映像を取得して、エンコードして出力
+func GetCameraMovie(videoTrack *mediadevices.VideoTrack, w io.Writer) {
+	return
 }

@@ -15,7 +15,13 @@ window.createSession = () => {
         .then(async d => {
             console.log(d)
             await pc.setLocalDescription(d)
-            const answer = await postData("/sdp", btoa(JSON.stringify(pc.localDescription)))
+            const answer = await postData("/sdp",　
+                {
+                    "sdp_offer": btoa(JSON.stringify(pc.localDescription)),
+                    "authnMetadata" : {
+                        "user": "example"
+                    }
+                })
 
             console.log(new RTCSessionDescription(JSON.parse(atob(answer))))
 
