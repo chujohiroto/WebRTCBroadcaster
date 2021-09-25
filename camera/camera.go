@@ -5,9 +5,10 @@ import (
 	"github.com/pion/mediadevices/pkg/codec/x264"
 	_ "github.com/pion/mediadevices/pkg/driver/camera"
 	"github.com/pion/mediadevices/pkg/prop"
+	"github.com/pion/webrtc/v3"
 )
 
-func GetCameraVideoTrack(width, height int) *mediadevices.VideoTrack {
+func GetCameraVideoTrack(width, height int)  (*mediadevices.VideoTrack, *webrtc.API) {
 	x264Params, _ := x264.NewParams()
 	x264Params.Preset = x264.PresetMedium
 	x264Params.BitRate = 1_000_000 // 1mbps
@@ -15,6 +16,10 @@ func GetCameraVideoTrack(width, height int) *mediadevices.VideoTrack {
 	codecSelector := mediadevices.NewCodecSelector(
 		mediadevices.WithVideoEncoders(&x264Params),
 	)
+
+	mediaEngine := webrtc.MediaEngine{}
+	codecSelector.Populate(&mediaEngine)
+	api := webrtc.NewAPI(webrtc.WithMediaEngine(&mediaEngine))
 
 	cameraMediaStream, _ := mediadevices.GetUserMedia(mediadevices.MediaStreamConstraints{
 		Video: func(c *mediadevices.MediaTrackConstraints) {
@@ -27,5 +32,5 @@ func GetCameraVideoTrack(width, height int) *mediadevices.VideoTrack {
 	track := cameraMediaStream.GetVideoTracks()[0]
 	videoTrack := track.(*mediadevices.VideoTrack)
 
-	return videoTrack
+	return videoTrack, api
 }

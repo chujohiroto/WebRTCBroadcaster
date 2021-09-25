@@ -35,11 +35,13 @@ func main() {
 	flag.Parse()
 
 	var track *mediadevices.VideoTrack
+	var api *webrtc.API
+
 	if *isDummy {
-		track = dummy.GetCameraVideoTrack(*width, *height)
+		track, api = dummy.GetCameraVideoTrack(*width, *height)
 		log.Println("ダミー映像を取得")
 	} else {
-		track = camera.GetCameraVideoTrack(*width, *height)
+		track, api = camera.GetCameraVideoTrack(*width, *height)
 		log.Println("カメラデバイスから映像を取得")
 	}
 
@@ -97,7 +99,7 @@ func main() {
 
 			log.Println("New SDF Offer\n" + offer.SDP)
 
-			connection, err := onConnect(offer, track, answerChan)
+			connection, err := onConnect(offer, track, answerChan, api)
 			if err != nil {
 				log.Println(err.Error())
 				connection.Close()
@@ -131,7 +133,7 @@ func startHTTPSDPServer(mux *http.ServeMux) (chan string, chan string) {
 	return sdpChan, answerChan
 }
 
-func onConnect(offer *webrtc.SessionDescription, track *mediadevices.VideoTrack, answerChan chan string) (*webrtc.PeerConnection, error) {
+func onConnect(offer *webrtc.SessionDescription, track *mediadevices.VideoTrack, answerChan chan string, api *webrtc.API) (*webrtc.PeerConnection, error) {
 	// Connection生成
 	peerConnectionConfig := webrtc.Configuration{
 		ICEServers: []webrtc.ICEServer{
@@ -141,7 +143,7 @@ func onConnect(offer *webrtc.SessionDescription, track *mediadevices.VideoTrack,
 		},
 	}
 
-	peerConnection, err := webrtc.NewPeerConnection(peerConnectionConfig)
+	peerConnection, err := api.NewPeerConnection(peerConnectionConfig)
 	if err != nil {
 		return nil, err
 	}
