@@ -25,28 +25,21 @@ window.createSession = () => {
             await pc.setLocalDescription(d)
             var answer = await postData("/sdp", btoa(JSON.stringify(pc.localDescription)))
 
-            console.log(answer)
+            console.log(JSON.parse(atob(answer)))
+
+            try {
+                await pc.setRemoteDescription(new RTCSessionDescription(JSON.parse(atob(answer))))
+            } catch (e) {
+                alert(e)
+            }
         })
         .catch(log)
 
     pc.ontrack = function (event) {
-        var el = document.getElementById('video1')
+        const el = document.getElementById('video1');
         el.srcObject = event.streams[0]
         el.autoplay = true
         el.controls = true
-    }
-
-    window.startSession = () => {
-        let sd = document.getElementById('remoteSessionDescription').value
-        if (sd === '') {
-            return alert('Session Description must not be empty')
-        }
-
-        try {
-            pc.setRemoteDescription(new RTCSessionDescription(JSON.parse(atob(sd))))
-        } catch (e) {
-            alert(e)
-        }
     }
 
     let btns = document.getElementsByClassName('createSessionButton')
