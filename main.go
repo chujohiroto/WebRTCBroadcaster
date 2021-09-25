@@ -53,9 +53,11 @@ func main() {
 
 	// API
 	mux.HandleFunc("/api/photo", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
 		w.Header().Set("Content-Type", "image/jpeg")
 		GetCameraFrame(track, w)
 		w.WriteHeader(http.StatusOK)
+		log.Println("API Call Get Photo Jpeg Image " + r.RemoteAddr)
 	})
 
 	// HTTPサーバー起動
