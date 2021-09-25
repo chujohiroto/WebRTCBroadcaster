@@ -63,12 +63,17 @@ func main() {
 		for {
 			newPeerSDP := <-offerChan
 
-			log.Println("New SDF Offer")
-
 			newPeerSDP = strings.Replace(newPeerSDP, "\"", "", -1)
 
-			connection, err := onConnect(newPeerSDP, answerChan)
+			offer, err := sdpDecode(newPeerSDP)
+			if err != nil {
+				log.Println(err.Error())
+				continue
+			}
 
+			log.Println("New SDF Offer\n" + offer.SDP)
+
+			connection, err := onConnect(offer, answerChan)
 			if err != nil {
 				log.Println(err.Error())
 				continue
@@ -106,13 +111,7 @@ func startHTTPSDPServer(mux *http.ServeMux) (chan string, chan string) {
 	return sdpChan, answerChan
 }
 
-func onConnect(sdp string, answerChan chan string) (*webrtc.PeerConnection, error) {
-	offer := webrtc.SessionDescription{}
-	err := signal.Decode(sdp, &offer)
-	if err != nil {
-		return nil, err
-	}
-
+func onConnect(offer *webrtc.SessionDescription, answerChan chan string) (*webrtc.PeerConnection, error) {
 	peerConnectionConfig := webrtc.Configuration{
 		ICEServers: []webrtc.ICEServer{
 			{
@@ -132,7 +131,7 @@ func onConnect(sdp string, answerChan chan string) (*webrtc.PeerConnection, erro
 		}
 	}()
 
-	err = peerConnection.SetRemoteDescription(offer)
+	err = peerConnection.SetRemoteDescription(*offer)
 	if err != nil {
 		return nil, err
 	}
@@ -159,6 +158,17 @@ func onConnect(sdp string, answerChan chan string) (*webrtc.PeerConnection, erro
 	<-gatherComplete
 
 	return peerConnection, nil
+}
+
+func sdpDecode(sdp string) (*webrtc.SessionDescription, error) {
+	offer := webrtc.SessionDescription{}
+	err := signal.Decode(sdp, &offer)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &offer, nil
 }
 
 // GetCameraFrame 現在のカメラの1フレームを取得する
