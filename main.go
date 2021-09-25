@@ -179,6 +179,11 @@ func onConnect(offer *webrtc.SessionDescription, track *mediadevices.VideoTrack,
 		return nil, err
 	}
 
+	err = peerConnection.SetLocalDescription(answer)
+	if err != nil {
+		return nil, err
+	}
+
 	answerBody, err := signal.Encode(answer)
 	if err != nil {
 		return nil, err
@@ -187,12 +192,6 @@ func onConnect(offer *webrtc.SessionDescription, track *mediadevices.VideoTrack,
 	answerChan <- answerBody
 
 	connectedChan := make(chan string)
-
-	// 接続完了まで待機
-	err = peerConnection.SetLocalDescription(answer)
-	if err != nil {
-		return nil, err
-	}
 
 	peerConnection.OnICEConnectionStateChange(func(state webrtc.ICEConnectionState) {
 		if state == webrtc.ICEConnectionStateCompleted {
@@ -203,6 +202,7 @@ func onConnect(offer *webrtc.SessionDescription, track *mediadevices.VideoTrack,
 		}
 	})
 
+	// 接続完了まで待機
 	<-connectedChan
 
 	return peerConnection, nil
