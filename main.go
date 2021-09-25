@@ -45,6 +45,10 @@ func main() {
 		log.Println("カメラデバイスから映像を取得")
 	}
 
+	if track == nil {
+		panic("Get Camera Video Track Nil")
+	}
+
 	// HTTPのハンドル周り定義
 	mux := http.NewServeMux()
 	offerChan, answerChan := startHTTPSDPServer(mux)

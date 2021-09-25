@@ -29,6 +29,10 @@ func GetCameraVideoTrack(width, height int) (*mediadevices.VideoTrack, *webrtc.A
 		Codec: codecSelector,
 	})
 
+	if len(cameraMediaStream.GetVideoTracks()) == 0 {
+		return nil, nil
+	}
+
 	track := cameraMediaStream.GetVideoTracks()[0]
 	videoTrack := track.(*mediadevices.VideoTrack)
 
