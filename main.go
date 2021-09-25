@@ -56,8 +56,7 @@ func main() {
 		w.WriteHeader(http.StatusOK)
 		w.Header().Set("Content-Type", "image/jpeg")
 		GetCameraFrame(track, w)
-		w.WriteHeader(http.StatusOK)
-		log.Println("API Call Get Photo Jpeg Image " + r.RemoteAddr)
+		log.Println("API Call Get PhotoImage " + r.RemoteAddr)
 	})
 
 	// HTTPサーバー起動
