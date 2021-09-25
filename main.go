@@ -10,6 +10,7 @@ import (
 	"github.com/pion/mediadevices"
 	"github.com/pion/webrtc/v3"
 	"image/jpeg"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -52,7 +53,8 @@ func main() {
 
 	// API
 	mux.HandleFunc("/api/photo", func(w http.ResponseWriter, r *http.Request) {
-		GetCameraFrame(track)
+		w.Header().Set("Content-Type", "image/jpeg")
+		GetCameraFrame(track, w)
 		w.WriteHeader(http.StatusOK)
 	})
 
@@ -189,11 +191,10 @@ func sdpDecode(sdp string) (*webrtc.SessionDescription, error) {
 }
 
 // GetCameraFrame 現在のカメラの1フレームを取得する
-func GetCameraFrame(videoTrack *mediadevices.VideoTrack) {
+func GetCameraFrame(videoTrack *mediadevices.VideoTrack, w io.Writer) {
 	videoReader := videoTrack.NewReader(false)
 	frame, release, _ := videoReader.Read()
 	defer release()
 
-	output, _ := os.Create("frame.jpg")
-	jpeg.Encode(output, frame, nil)
+	jpeg.Encode(w, frame, nil)
 }
