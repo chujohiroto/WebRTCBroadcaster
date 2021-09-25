@@ -64,6 +64,8 @@ func main() {
 
 			log.Println("New SDF Offer")
 
+			log.Println(newPeerSDP)
+
 			connection, err := onConnect(newPeerSDP)
 
 			if err != nil {
