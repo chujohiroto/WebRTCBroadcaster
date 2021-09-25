@@ -23,7 +23,7 @@ import (
 func main() {
 	// Args
 	isViewPage := flag.Bool("page", true, "テストで閲覧するためのWebページを表示する")
-	webPort := flag.Int("webport", 8080, "シグナリングやテストで閲覧するためのWebページを表示するポート")
+	port := flag.Int("port", 8080, "シグナリングやテストで閲覧するためのWebページを表示するポート")
 	isDummy := flag.Bool("dummy", false, "カメラデバイスを使わず、ダミー映像で配信する")
 	width := flag.Int("width", 1920, "カメラデバイスから取得する解像度の幅")
 	height := flag.Int("height", 1080, "カメラデバイスから取得する解像度の高さ")
@@ -47,13 +47,14 @@ func main() {
 	if *isViewPage {
 		srv := http.FileServer(http.Dir("html"))
 		mux.Handle("/", srv)
+		log.Println("テストページを起動")
 	}
 
 	// HTTPサーバー起動
 	go func() {
-		log.Println("Testで閲覧するためのHTTP Serverを起動")
+		log.Println("HTTP Serverを起動　Port:" + strconv.Itoa(*port))
 
-		err := http.ListenAndServe(":"+strconv.Itoa(*webPort), mux)
+		err := http.ListenAndServe(":"+strconv.Itoa(*port), mux)
 		if err != nil {
 			panic(err)
 		}
@@ -100,13 +101,10 @@ func main() {
 	}
 
 	log.Println("Server shutdown")
-
 }
 
 func startHTTPSDPServer(mux *http.ServeMux) (chan string, chan string) {
 	sdpChan, answerChan := signal.HTTPSDPServer(mux)
-
-	log.Println("SDPを受け付けるHTTP Serverを起動")
 
 	return sdpChan, answerChan
 }
