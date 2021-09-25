@@ -79,9 +79,22 @@ func main() {
 				continue
 			}
 
-			log.Println("Connected")
+			track.OnEnded(func(err error) {
+				fmt.Printf("Track (ID: %s) ended with error: %v\n",
+					track.ID(), err)
+			})
 
-			connection.AddTrack(track)
+			_, err = connection.AddTransceiverFromTrack(track,
+				webrtc.RtpTransceiverInit{
+					Direction: webrtc.RTPTransceiverDirectionSendonly,
+				},
+			)
+
+			if err != nil {
+				log.Println(err.Error())
+			}
+
+			log.Println("Connected")
 		}
 	}()
 
