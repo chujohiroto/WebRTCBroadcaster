@@ -30,6 +30,7 @@ func main() {
 	width := flag.Int("width", 1920, "カメラデバイスから取得する解像度の幅")
 	height := flag.Int("height", 1080, "カメラデバイスから取得する解像度の高さ")
 	config.AuthnWebhookURL = flag.String("webhook", "", "認証WebHookのURL")
+	isAPI := flag.Bool("api", true, "画像、動画取得APIを有効にする")
 
 	flag.Parse()
 
@@ -53,20 +54,23 @@ func main() {
 		log.Println("テストページを起動")
 	}
 
-	// API
-	mux.HandleFunc("/api/photo", func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-		w.Header().Set("Content-Type", "image/jpeg")
-		GetCameraFrame(track, w)
-		log.Println("API Call Get PhotoImage " + r.RemoteAddr)
-	})
+	// 画像、動画取得API
+	if *isAPI {
+		mux.HandleFunc("/api/photo", func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(http.StatusOK)
+			w.Header().Set("Content-Type", "image/jpeg")
+			GetCameraFrame(track, w)
+			log.Println("API Call Get PhotoImage " + r.RemoteAddr)
+		})
 
-	mux.HandleFunc("/api/movie", func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-		w.Header().Set("Content-Type", "video/mp4")
-		GetCameraMovie(track, w)
-		log.Println("API Call Get PhotoImage " + r.RemoteAddr)
-	})
+		mux.HandleFunc("/api/movie", func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(http.StatusOK)
+			w.Header().Set("Content-Type", "video/mp4")
+			GetCameraMovie(track, w)
+			log.Println("API Call Get PhotoImage " + r.RemoteAddr)
+		})
+
+	}
 
 	// HTTPサーバー起動
 	go func() {

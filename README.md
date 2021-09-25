@@ -7,6 +7,8 @@ WebRTCでカメラ映像(H.264)を複数人に配信するソフトウェア　R
 ```shell
 ./WebRTCBroadcaster -dummy -h
 Usage of ./WebRTCBroadcaster:
+  -api
+        画像、動画取得APIを有効にする
   -dummy
         カメラデバイスを使わず、ダミー映像で配信する
   -height int
