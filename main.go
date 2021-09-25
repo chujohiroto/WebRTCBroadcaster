@@ -41,7 +41,7 @@ func main() {
 
 	// HTTPのハンドル周り定義
 	mux := http.NewServeMux()
-	offerChan := startHTTPSDPServer(mux)
+	offerChan, answerChan := startHTTPSDPServer(mux)
 
 	// もしテストページを起動するなら、staticファイル追加
 	if *isViewPage {
@@ -67,7 +67,7 @@ func main() {
 
 			newPeerSDP = strings.Replace(newPeerSDP, "\"", "", -1)
 
-			connection, err := onConnect(newPeerSDP)
+			connection, err := onConnect(newPeerSDP, answerChan)
 
 			if err != nil {
 				log.Println(err.Error())
@@ -98,15 +98,15 @@ func main() {
 
 }
 
-func startHTTPSDPServer(mux *http.ServeMux) chan string {
-	sdpChan := signal.HTTPSDPServer(mux)
+func startHTTPSDPServer(mux *http.ServeMux) (chan string, chan string) {
+	sdpChan, answerChan := signal.HTTPSDPServer(mux)
 
 	log.Println("SDPを受け付けるHTTP Serverを起動")
 
-	return sdpChan
+	return sdpChan, answerChan
 }
 
-func onConnect(sdp string) (*webrtc.PeerConnection, error) {
+func onConnect(sdp string, answerChan chan string) (*webrtc.PeerConnection, error) {
 	offer := webrtc.SessionDescription{}
 	err := signal.Decode(sdp, &offer)
 	if err != nil {
@@ -125,6 +125,7 @@ func onConnect(sdp string) (*webrtc.PeerConnection, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	defer func() {
 		if cErr := peerConnection.Close(); cErr != nil {
 			fmt.Printf("cannot close peerConnection: %v\n", cErr)
@@ -140,6 +141,13 @@ func onConnect(sdp string) (*webrtc.PeerConnection, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	answerBody, err := signal.Encode(answer)
+	if err != nil {
+		return nil, err
+	}
+
+	answerChan <- answerBody
 
 	gatherComplete := webrtc.GatheringCompletePromise(peerConnection)
 
