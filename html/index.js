@@ -1,8 +1,4 @@
 /* eslint-env browser */
-var log = msg => {
-    document.getElementById('logs').innerHTML += msg + '<br>'
-}
-
 window.createSession = () => {
     let pc = new RTCPeerConnection({
         iceServers: [
@@ -11,21 +7,17 @@ window.createSession = () => {
             }
         ]
     })
-    pc.oniceconnectionstatechange = e => log(pc.iceConnectionState)
-    pc.onicecandidate = event => {
-        if (event.candidate === null) {
-            document.getElementById('localSessionDescription').value = btoa(JSON.stringify(pc.localDescription))
-        }
-    }
+    pc.oniceconnectionstatechange = _ => console.log(pc.iceConnectionState)
+    pc.onicecandidate = _ => {}
 
     pc.addTransceiver('video')
     pc.createOffer()
         .then(async d => {
             console.log(d)
             await pc.setLocalDescription(d)
-            var answer = await postData("/sdp", btoa(JSON.stringify(pc.localDescription)))
+            const answer = await postData("/sdp", btoa(JSON.stringify(pc.localDescription)))
 
-            console.log(JSON.parse(atob(answer)))
+            console.log(new RTCSessionDescription(JSON.parse(atob(answer))))
 
             try {
                 await pc.setRemoteDescription(new RTCSessionDescription(JSON.parse(atob(answer))))
@@ -33,7 +25,7 @@ window.createSession = () => {
                 alert(e)
             }
         })
-        .catch(log)
+        .catch(console.log)
 
     pc.ontrack = function (event) {
         const el = document.getElementById('video1');
@@ -41,13 +33,6 @@ window.createSession = () => {
         el.autoplay = true
         el.controls = true
     }
-
-    let btns = document.getElementsByClassName('createSessionButton')
-    for (let i = 0; i < btns.length; i++) {
-        btns[i].style = 'display: none'
-    }
-
-    document.getElementById('signalingContainer').style = 'display: block'
 }
 
 async function postData(url = '', data = {}) {
@@ -59,7 +44,6 @@ async function postData(url = '', data = {}) {
         credentials: 'same-origin', // include, *same-origin, omit
         headers: {
             'Content-Type': 'application/json'
-            // 'Content-Type': 'application/x-www-form-urlencoded',
         },
         redirect: 'follow', // manual, *follow, error
         referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
