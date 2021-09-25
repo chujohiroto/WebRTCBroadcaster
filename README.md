@@ -23,7 +23,7 @@ Usage of ./WebRTCBroadcaster:
 
 **ダミー映像での実行例**
 ```shell
-./WebRTCBroadcaster -dummy -page -webhook http://localhost:8888/auth
+./WebRTCBroadcaster -dummy -page
 ```
 
 **カメラから映像取得、認証Webhookありでの実行例**
