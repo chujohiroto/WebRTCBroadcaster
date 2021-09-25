@@ -20,7 +20,10 @@ window.createSession = () => {
 
     pc.addTransceiver('video')
     pc.createOffer()
-        .then(d => pc.setLocalDescription(d))
+        .then(async d => {
+            pc.setLocalDescription(d)
+            await postData("http://localhost:8888/sdp", d)
+        })
         .catch(log)
 
     pc.ontrack = function (event) {
@@ -49,4 +52,22 @@ window.createSession = () => {
     }
 
     document.getElementById('signalingContainer').style = 'display: block'
+}
+
+async function postData(url = '', data = {}) {
+    // 既定のオプションには * が付いています
+    const response = await fetch(url, {
+        method: 'POST', // *GET, POST, PUT, DELETE, etc.
+        mode: 'cors', // no-cors, *cors, same-origin
+        cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+        credentials: 'same-origin', // include, *same-origin, omit
+        headers: {
+            'Content-Type': 'application/json'
+            // 'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        redirect: 'follow', // manual, *follow, error
+        referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
+        body: JSON.stringify(data) // 本文のデータ型は "Content-Type" ヘッダーと一致する必要があります
+    })
+    return response.json(); // レスポンスの JSON を解析
 }
