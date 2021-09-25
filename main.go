@@ -74,24 +74,7 @@ func main() {
 
 			log.Println("New SDF Offer\n" + offer.SDP)
 
-			connection, err := onConnect(offer, answerChan)
-
-			if err != nil {
-				log.Println(err.Error())
-				connection.Close()
-				continue
-			}
-
-			track.OnEnded(func(err error) {
-				fmt.Printf("Track (ID: %s) ended with error: %v\n", track.ID(), err)
-			})
-
-			_, err = connection.AddTransceiverFromTrack(track,
-				webrtc.RtpTransceiverInit{
-					Direction: webrtc.RTPTransceiverDirectionSendonly,
-				},
-			)
-
+			connection, err := onConnect(offer, track, answerChan)
 			if err != nil {
 				log.Println(err.Error())
 				connection.Close()
@@ -128,7 +111,8 @@ func startHTTPSDPServer(mux *http.ServeMux) (chan string, chan string) {
 	return sdpChan, answerChan
 }
 
-func onConnect(offer *webrtc.SessionDescription, answerChan chan string) (*webrtc.PeerConnection, error) {
+func onConnect(offer *webrtc.SessionDescription, track *mediadevices.VideoTrack, answerChan chan string) (*webrtc.PeerConnection, error) {
+	// Connection生成
 	peerConnectionConfig := webrtc.Configuration{
 		ICEServers: []webrtc.ICEServer{
 			{
@@ -141,6 +125,23 @@ func onConnect(offer *webrtc.SessionDescription, answerChan chan string) (*webrt
 	if err != nil {
 		return nil, err
 	}
+
+	// Video周り設定
+	track.OnEnded(func(err error) {
+		fmt.Printf("Track (ID: %s) ended with error: %v\n", track.ID(), err)
+	})
+
+	_, err = peerConnection.AddTransceiverFromTrack(track,
+		webrtc.RtpTransceiverInit{
+			Direction: webrtc.RTPTransceiverDirectionSendonly,
+		},
+	)
+	if err != nil {
+		log.Println(err.Error())
+		return nil, err
+	}
+
+	// Answer送信
 
 	err = peerConnection.SetRemoteDescription(*offer)
 	if err != nil {
@@ -159,6 +160,7 @@ func onConnect(offer *webrtc.SessionDescription, answerChan chan string) (*webrt
 
 	answerChan <- answerBody
 
+	// 接続完了まで待機
 	gatherComplete := webrtc.GatheringCompletePromise(peerConnection)
 
 	err = peerConnection.SetLocalDescription(answer)
