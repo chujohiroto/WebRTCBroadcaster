@@ -31,6 +31,8 @@ func HTTPSDPServer(mux *http.ServeMux) (chan string, chan string) {
 		req := sdpRequest{}
 		err := json.Unmarshal(body, req)
 		if err != nil {
+			log.Println(err.Error())
+			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 
