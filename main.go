@@ -22,11 +22,10 @@ import (
 func main() {
 	// Args
 	isViewPage := flag.Bool("page", true, "テストで閲覧するためのWebページを表示する")
-	webPort := flag.Int("webport", 8080, "テストで閲覧するためのWebページを表示するポート")
+	webPort := flag.Int("webport", 8080, "シグナリングやテストで閲覧するためのWebページを表示するポート")
 	isDummy := flag.Bool("dummy", false, "カメラデバイスを使わず、ダミー映像で配信する")
 	width := flag.Int("width", 1920, "カメラデバイスから取得する解像度の幅")
 	height := flag.Int("height", 1080, "カメラデバイスから取得する解像度の高さ")
-	sdpPort := flag.Int("sdpport", 8888, "SDPを受け付けるHTTP Serverのポート")
 
 	flag.Parse()
 
@@ -39,21 +38,25 @@ func main() {
 		log.Println("カメラデバイスから映像を取得")
 	}
 
-	offerChan := startHTTPSDPServer(*sdpPort)
+	// HTTPのハンドル周り定義
+	mux := http.NewServeMux()
+	offerChan := startHTTPSDPServer(mux)
 
+	// もしテストページを起動するなら、staticファイル追加
 	if *isViewPage {
-		go func() {
-			log.Println("Testで閲覧するためのHTTP Serverを起動")
-
-			srv := http.FileServer(http.Dir("html"))
-			http.Handle("/", srv)
-
-			err := http.ListenAndServe(":"+strconv.Itoa(*webPort), nil)
-			if err != nil {
-				panic(err)
-			}
-		}()
+		srv := http.FileServer(http.Dir("html"))
+		mux.Handle("/", srv)
 	}
+
+	// HTTPサーバー起動
+	go func() {
+		log.Println("Testで閲覧するためのHTTP Serverを起動")
+
+		err := http.ListenAndServe(":"+strconv.Itoa(*webPort), mux)
+		if err != nil {
+			panic(err)
+		}
+	}()
 
 	go func() {
 		for {
@@ -92,8 +95,8 @@ func main() {
 
 }
 
-func startHTTPSDPServer(port int) chan string {
-	sdpChan := signal.HTTPSDPServer(port)
+func startHTTPSDPServer(mux *http.ServeMux) chan string {
+	sdpChan := signal.HTTPSDPServer(mux)
 
 	log.Println("SDPを受け付けるHTTP Serverを起動")
 
