@@ -2,6 +2,7 @@ package main
 
 import (
 	"WebRTCBroadcaster/camera"
+	"WebRTCBroadcaster/config"
 	"WebRTCBroadcaster/dummy"
 	"WebRTCBroadcaster/signal"
 	"context"
@@ -28,6 +29,7 @@ func main() {
 	isDummy := flag.Bool("dummy", false, "カメラデバイスを使わず、ダミー映像で配信する")
 	width := flag.Int("width", 1920, "カメラデバイスから取得する解像度の幅")
 	height := flag.Int("height", 1080, "カメラデバイスから取得する解像度の高さ")
+	config.AuthnWebhookURL = flag.String("webhook", "", "認証WebHookのURL")
 
 	flag.Parse()
 

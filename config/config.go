@@ -1,3 +1,3 @@
 package config
 
-var AuthnWebhookURL = ""
+var AuthnWebhookURL *string

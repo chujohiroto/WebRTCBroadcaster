@@ -59,13 +59,13 @@ type authnWebhookResponse struct {
 }
 
 func AuthnWebhook(req *interface{}) (*authnWebhookResponse, error) {
-	if config.AuthnWebhookURL == "" {
+	if *config.AuthnWebhookURL == "" {
 		var allowed = true
 		authnWebhookResponse := &authnWebhookResponse{Allowed: &allowed}
 		return authnWebhookResponse, nil
 	}
 
-	resp, err := postRequest(config.AuthnWebhookURL, req)
+	resp, err := postRequest(*config.AuthnWebhookURL, req)
 	if err != nil {
 		log.Println("AuthnWebhookError body: \n" + err.Error())
 		return nil, errAuthnWebhook
