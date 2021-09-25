@@ -68,20 +68,22 @@ func main() {
 			offer, err := sdpDecode(newPeerSDP)
 			if err != nil {
 				log.Println(err.Error())
+				answerChan <- ""
 				continue
 			}
 
 			log.Println("New SDF Offer\n" + offer.SDP)
 
 			connection, err := onConnect(offer, answerChan)
+
 			if err != nil {
 				log.Println(err.Error())
+				connection.Close()
 				continue
 			}
 
 			track.OnEnded(func(err error) {
-				fmt.Printf("Track (ID: %s) ended with error: %v\n",
-					track.ID(), err)
+				fmt.Printf("Track (ID: %s) ended with error: %v\n", track.ID(), err)
 			})
 
 			_, err = connection.AddTransceiverFromTrack(track,
@@ -92,6 +94,8 @@ func main() {
 
 			if err != nil {
 				log.Println(err.Error())
+				connection.Close()
+				continue
 			}
 
 			log.Println("Connected")
@@ -137,12 +141,6 @@ func onConnect(offer *webrtc.SessionDescription, answerChan chan string) (*webrt
 	if err != nil {
 		return nil, err
 	}
-
-	defer func() {
-		if cErr := peerConnection.Close(); cErr != nil {
-			fmt.Printf("cannot close peerConnection: %v\n", cErr)
-		}
-	}()
 
 	err = peerConnection.SetRemoteDescription(*offer)
 	if err != nil {
