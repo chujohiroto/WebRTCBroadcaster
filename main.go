@@ -195,7 +195,7 @@ func onConnect(offer *webrtc.SessionDescription, track *mediadevices.VideoTrack,
 	}
 
 	peerConnection.OnICEConnectionStateChange(func(state webrtc.ICEConnectionState) {
-		if state == webrtc.ICEConnectionStateConnected {
+		if state == webrtc.ICEConnectionStateCompleted {
 			connectedChan <- state.String()
 		}
 		if state == webrtc.ICEConnectionStateClosed || state == webrtc.ICEConnectionStateDisconnected || state == webrtc.ICEConnectionStateFailed {
