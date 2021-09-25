@@ -50,6 +50,12 @@ func main() {
 		log.Println("テストページを起動")
 	}
 
+	// API
+	mux.HandleFunc("/api/photo", func(w http.ResponseWriter, r *http.Request) {
+		GetCameraFrame(track)
+		w.WriteHeader(http.StatusOK)
+	})
+
 	// HTTPサーバー起動
 	go func() {
 		log.Println("HTTP Serverを起動　Port:" + strconv.Itoa(*port))
