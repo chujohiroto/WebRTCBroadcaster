@@ -153,12 +153,6 @@ func onConnect(offer *webrtc.SessionDescription, track *mediadevices.VideoTrack,
 		return nil, err
 	}
 
-	dc, _ := peerConnection.CreateDataChannel("testData", &webrtc.DataChannelInit{})
-
-	dc.OnOpen(func() {
-		dc.SendText("giergwigiwejgiowjgowgjwwriognjbiwnjitgwrjnbnwghiwrhgwhighwrioghwoighowhgowi")
-	})
-
 	// Video周り設定
 	track.OnEnded(func(err error) {
 		fmt.Printf("Track (ID: %s) ended with error: %v\n", track.ID(), err)
@@ -192,15 +186,24 @@ func onConnect(offer *webrtc.SessionDescription, track *mediadevices.VideoTrack,
 
 	answerChan <- answerBody
 
-	// 接続完了まで待機
-	gatherComplete := webrtc.GatheringCompletePromise(peerConnection)
+	connectedChan := make(chan string)
 
+	// 接続完了まで待機
 	err = peerConnection.SetLocalDescription(answer)
 	if err != nil {
 		return nil, err
 	}
 
-	<-gatherComplete
+	peerConnection.OnICEConnectionStateChange(func(state webrtc.ICEConnectionState) {
+		if state == webrtc.ICEConnectionStateConnected {
+			connectedChan <- state.String()
+		}
+		if state == webrtc.ICEConnectionStateClosed || state == webrtc.ICEConnectionStateDisconnected || state == webrtc.ICEConnectionStateFailed {
+			peerConnection.Close()
+		}
+	})
+
+	<-connectedChan
 
 	return peerConnection, nil
 }
