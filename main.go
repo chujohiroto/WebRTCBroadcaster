@@ -65,7 +65,7 @@ func main() {
 
 			log.Println("New SDF Offer")
 
-			log.Println(strings.Replace(newPeerSDP, "\"", "", -1))
+			newPeerSDP = strings.Replace(newPeerSDP, "\"", "", -1)
 
 			connection, err := onConnect(newPeerSDP)
 
