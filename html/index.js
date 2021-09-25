@@ -23,7 +23,7 @@ window.createSession = () => {
         .then(async d => {
             console.log(d)
             await pc.setLocalDescription(d)
-            await postData("/sdp", d)
+            await postData("/sdp", atob(d.toString()))
         })
         .catch(log)
 
