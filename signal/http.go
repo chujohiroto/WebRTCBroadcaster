@@ -28,7 +28,7 @@ func HTTPSDPServer(mux *http.ServeMux) (chan string, chan string) {
 
 	mux.HandleFunc("/sdp", func(w http.ResponseWriter, r *http.Request) {
 		body, _ := ioutil.ReadAll(r.Body)
-		req := sdpRequest{}
+		req := &sdpRequest{}
 		err := json.Unmarshal(body, req)
 		if err != nil {
 			log.Println(err.Error())
