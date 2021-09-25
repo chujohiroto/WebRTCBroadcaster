@@ -15,6 +15,7 @@ import (
 	"os"
 	oss "os/signal"
 	"strconv"
+	"strings"
 	"syscall"
 	"time"
 )
@@ -64,7 +65,7 @@ func main() {
 
 			log.Println("New SDF Offer")
 
-			log.Println(newPeerSDP)
+			log.Println(strings.Replace(newPeerSDP, "\"", "", -1))
 
 			connection, err := onConnect(newPeerSDP)
 
