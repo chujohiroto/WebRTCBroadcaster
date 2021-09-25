@@ -29,6 +29,7 @@ func main() {
 	isDummy := flag.Bool("dummy", false, "カメラデバイスを使わず、ダミー映像で配信する")
 	width := flag.Int("width", 1920, "カメラデバイスから取得する解像度の幅")
 	height := flag.Int("height", 1080, "カメラデバイスから取得する解像度の高さ")
+	framerate := flag.Float64("framerate", 30, "フレームレート")
 	config.AuthnWebhookURL = flag.String("webhook", "", "認証WebHookのURL")
 	isAPI := flag.Bool("api", true, "画像、動画取得APIを有効にする")
 
@@ -38,18 +39,16 @@ func main() {
 	var api *webrtc.API
 
 	if *isDummy {
-		track, api = dummy.GetCameraVideoTrack(*width, *height)
+		track, api = dummy.GetCameraVideoTrack(*width, *height, *framerate)
 		log.Println("ダミー映像を取得")
 	} else {
-		track, api = camera.GetCameraVideoTrack(*width, *height)
+		track, api = camera.GetCameraVideoTrack(*width, *height, *framerate)
 		log.Println("カメラデバイスから映像を取得")
 	}
 
 	if track == nil {
 		panic("Get Camera Video Track Nil")
 	}
-
-	track.Close()
 
 	// HTTPのハンドル周り定義
 	mux := http.NewServeMux()
@@ -153,8 +152,6 @@ func onConnect(offer *webrtc.SessionDescription, track *mediadevices.VideoTrack,
 	if err != nil {
 		return nil, err
 	}
-
-	track, api = dummy.GetCameraVideoTrack(1920, 1080)
 
 	// Video周り設定
 	track.OnEnded(func(err error) {

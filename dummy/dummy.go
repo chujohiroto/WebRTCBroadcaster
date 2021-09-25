@@ -9,7 +9,7 @@ import (
 	"log"
 )
 
-func GetCameraVideoTrack(width, height int) (*mediadevices.VideoTrack, *webrtc.API) {
+func GetCameraVideoTrack(width, height int, framerate float64) (*mediadevices.VideoTrack, *webrtc.API) {
 	x264Params, _ := x264.NewParams()
 	x264Params.Preset = x264.PresetMedium
 	x264Params.BitRate = 1_000_000 // 1mbps
@@ -26,6 +26,7 @@ func GetCameraVideoTrack(width, height int) (*mediadevices.VideoTrack, *webrtc.A
 		Video: func(c *mediadevices.MediaTrackConstraints) {
 			c.Width = prop.Int(width)
 			c.Height = prop.Int(height)
+			c.FrameRate = prop.Float(framerate)
 		},
 		Codec: codecSelector,
 	})
