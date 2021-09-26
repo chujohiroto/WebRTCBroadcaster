@@ -102,7 +102,7 @@ func main() {
 				continue
 			}
 
-			log.Println("New SDF Offer\n" + offer.SDP)
+			log.Println("New SDF Offer" /* offer.SDP */)
 
 			connection, err := onConnect(offer, track, answerChan, api)
 			if err != nil {
