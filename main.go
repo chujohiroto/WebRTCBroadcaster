@@ -168,7 +168,7 @@ func onConnect(offer *webrtc.SessionDescription, track *mediadevices.VideoTrack,
 		return nil, err
 	}
 
-	// Answer送信
+	// Offerを登録
 	err = peerConnection.SetRemoteDescription(*offer)
 	if err != nil {
 		return nil, err
@@ -179,31 +179,31 @@ func onConnect(offer *webrtc.SessionDescription, track *mediadevices.VideoTrack,
 		return nil, err
 	}
 
+	peerConnection.OnConnectionStateChange(func(s webrtc.PeerConnectionState) {
+		log.Printf("Peer Connection State has changed: %s\n", s.String())
+
+		if s == webrtc.PeerConnectionStateFailed {
+			log.Println("PeerConnectionStateFailed")
+			peerConnection.Close()
+		}
+	})
+
+	// Gatheringが完了するまで待機
+	gatherComplete := webrtc.GatheringCompletePromise(peerConnection)
+
 	err = peerConnection.SetLocalDescription(answer)
 	if err != nil {
 		return nil, err
 	}
 
+	<-gatherComplete
+
+	// Send Answer
 	answerBody, err := signal.Encode(answer)
 	if err != nil {
 		return nil, err
 	}
-
 	answerChan <- answerBody
-
-	connectedChan := make(chan string)
-
-	peerConnection.OnICEConnectionStateChange(func(state webrtc.ICEConnectionState) {
-		if state == webrtc.ICEConnectionStateCompleted {
-			connectedChan <- state.String()
-		}
-		if state == webrtc.ICEConnectionStateClosed || state == webrtc.ICEConnectionStateDisconnected || state == webrtc.ICEConnectionStateFailed {
-			peerConnection.Close()
-		}
-	})
-
-	// 接続完了まで待機
-	<-connectedChan
 
 	return peerConnection, nil
 }
