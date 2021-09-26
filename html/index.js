@@ -41,9 +41,7 @@ window.createSession = () => {
     pc.ontrack = function (event) {
         console.log(event)
         const el = document.getElementById('video1');
-        console.log(event.streams[0])
-        console.log(event.streams[0].getVideoTracks()[0])
-        el.srcObject = URL.createObjectURL(event.streams[0])
+        el.srcObject = event.streams[0]
         el.autoplay = true
         el.controls = true
     }
