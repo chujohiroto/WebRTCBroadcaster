@@ -35,10 +35,11 @@ window.createSession = () => {
 
     pc.ontrack = function (event) {
         console.log(event)
-        const el = document.getElementById('video1');
+        const el = document.createElement(event.track.kind)
         el.srcObject = event.streams[0]
         el.autoplay = true
         el.controls = true
+        document.getElementById('remoteVideos').appendChild(el)
     }
 
     pc.addTransceiver('video', {
