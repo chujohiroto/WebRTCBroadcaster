@@ -197,6 +197,8 @@ func onConnect(offer *webrtc.SessionDescription, track *mediadevices.VideoTrack,
 
 	<-gatherComplete
 
+	log.Println("Gathering Complete")
+
 	// Send Answer
 	answerBody, err := signal.Encode(answer)
 	if err != nil {
