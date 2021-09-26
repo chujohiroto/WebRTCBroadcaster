@@ -27,7 +27,9 @@ window.createSession = () => {
         }
     }
 
-    pc.addTransceiver('video')
+    pc.addTransceiver('video', {
+        'direction': 'recvonly'
+    })
 
     pc.createOffer()
         .then(async d => {
