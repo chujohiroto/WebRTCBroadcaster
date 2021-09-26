@@ -8,21 +8,15 @@ window.createSession = () => {
         ]
     })
     pc.oniceconnectionstatechange = _ => console.log(pc.iceConnectionState)
-    pc.onicecandidate = _ => {}
-
-    pc.addTransceiver('video')
-    pc.createOffer()
-        .then(async d => {
-            console.log(d)
-            await pc.setLocalDescription(d)
-            const answer = await postData("/sdp",　
+    pc.onicecandidate = async event => {
+        if (event.candidate === null) {
+            const answer = await postData("/sdp",
                 {
                     "sdp_offer": btoa(JSON.stringify(pc.localDescription)),
                     "authnMetadata" : {
                         "user": "example"
                     }
                 })
-
             console.log(new RTCSessionDescription(JSON.parse(atob(answer))))
 
             try {
@@ -30,6 +24,14 @@ window.createSession = () => {
             } catch (e) {
                 alert(e)
             }
+        }
+    }
+
+    pc.addTransceiver('video')
+    pc.createOffer()
+        .then(async d => {
+            console.log(d)
+            await pc.setLocalDescription(d)
         })
         .catch(console.log)
 
