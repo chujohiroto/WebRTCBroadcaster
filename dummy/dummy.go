@@ -12,7 +12,7 @@ import (
 func GetCameraVideoTrack(width, height int, framerate float64) (*mediadevices.VideoTrack, *webrtc.API) {
 	x264Params, _ := x264.NewParams()
 	x264Params.Preset = x264.PresetMedium
-	x264Params.BitRate = 1_000_000 // 1mbps
+	x264Params.BitRate = 10_000_000 // 1mbps
 
 	codecSelector := mediadevices.NewCodecSelector(
 		mediadevices.WithVideoEncoders(&x264Params),
