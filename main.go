@@ -30,6 +30,7 @@ func main() {
 	width := flag.Int("width", 1920, "カメラデバイスから取得する解像度の幅")
 	height := flag.Int("height", 1080, "カメラデバイスから取得する解像度の高さ")
 	framerate := flag.Float64("framerate", 30, "フレームレート")
+	bitrate := flag.Int("bitrate", 1_000_000, "エンコードする映像ビットレート、帯域") // デフォルトは1Mbps
 	config.AuthnWebhookURL = flag.String("webhook", "", "認証WebHookのURL")
 	isAPI := flag.Bool("api", true, "画像、動画取得APIを有効にする")
 
@@ -39,10 +40,10 @@ func main() {
 	var api *webrtc.API
 
 	if *isDummy {
-		track, api = dummy.GetCameraVideoTrack(*width, *height, *framerate)
+		track, api = dummy.GetCameraVideoTrack(*width, *height, *bitrate, *framerate)
 		log.Println("ダミー映像を取得")
 	} else {
-		track, api = camera.GetCameraVideoTrack(*width, *height, *framerate)
+		track, api = camera.GetCameraVideoTrack(*width, *height, *bitrate, *framerate)
 		log.Println("カメラデバイスから映像を取得")
 	}
 
