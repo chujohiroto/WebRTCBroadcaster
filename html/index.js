@@ -1,57 +1,59 @@
 /* eslint-env browser */
-window.createSession = () => {
-    let pc = new RTCPeerConnection({
-        iceServers: [
-            {
-                urls: 'stun:stun.l.google.com:19302'
-            }
-        ]
-    })
-
-    pc.onconnectionstatechange = event => {
-        console.log(pc.connectionState)
-    }
-
-    pc.oniceconnectionstatechange = _ => console.log(pc.iceConnectionState)
-
-    pc.onicecandidate = async event => {
-        if (event.candidate === null) {
-            const answer = await postData("/sdp",
-                {
-                    "sdp_offer": btoa(JSON.stringify(pc.localDescription)),
-                    "authnMetadata" : {
-                        "user": "example"
-                    }
-                })
-            console.log(new RTCSessionDescription(JSON.parse(atob(answer))))
-
-            try {
-                await pc.setRemoteDescription(new RTCSessionDescription(JSON.parse(atob(answer))))
-            } catch (e) {
-                alert(e)
-            }
+const pc = new RTCPeerConnection({
+    iceServers: [
+        {
+            urls: 'stun:stun.l.google.com:19302'
         }
-    }
+    ]
+})
 
-    pc.ontrack = function (event) {
-        console.log(event)
-        const el = document.createElement(event.track.kind)
-        el.srcObject = event.streams[0]
-        el.autoplay = true
-        el.controls = true
-        document.getElementById('remoteVideos').appendChild(el)
-    }
+pc.onconnectionstatechange = event => {
+    console.log(pc.connectionState)
+}
 
-    pc.addTransceiver('video', {
-        'direction': 'recvonly'
+pc.oniceconnectionstatechange = _ => console.log(pc.iceConnectionState)
+
+pc.onicecandidate = async event => {
+    if (event.candidate === null) {
+        await window.startSession()
+    }
+}
+
+pc.ontrack = function (event) {
+    console.log(event)
+    const el = document.createElement(event.track.kind)
+    el.srcObject = event.streams[0]
+    el.autoplay = true
+    el.controls = true
+    document.getElementById('remoteVideos').appendChild(el)
+}
+
+pc.addTransceiver('video', {
+    'direction': 'recvonly'
+})
+
+pc.createOffer()
+    .then(async d => {
+        console.log(d)
+        await pc.setLocalDescription(d)
     })
+    .catch(console.log)
 
-    pc.createOffer()
-        .then(async d => {
-            console.log(d)
-            await pc.setLocalDescription(d)
+window.startSession = async () => {
+    const answer = await postData("/sdp",
+        {
+            "sdp_offer": btoa(JSON.stringify(pc.localDescription)),
+            "authnMetadata" : {
+                "user": "example"
+            }
         })
-        .catch(console.log)
+    console.log(new RTCSessionDescription(JSON.parse(atob(answer))))
+
+    try {
+        await pc.setRemoteDescription(new RTCSessionDescription(JSON.parse(atob(answer))))
+    } catch (e) {
+        alert(e)
+    }
 }
 
 async function postData(url = '', data = {}) {
