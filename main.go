@@ -182,11 +182,16 @@ func onConnect(offer *webrtc.SessionDescription, track *mediadevices.VideoTrack,
 		return nil, err
 	}
 
+	connectedChan := make(chan string)
 	peerConnection.OnConnectionStateChange(func(s webrtc.PeerConnectionState) {
 		log.Printf("Peer Connection State has changed: %s\n", s.String())
 
 		if s == webrtc.PeerConnectionStateFailed {
 			peerConnection.Close()
+		}
+
+		if s == webrtc.PeerConnectionStateConnected {
+			connectedChan <- ""
 		}
 	})
 
@@ -208,6 +213,8 @@ func onConnect(offer *webrtc.SessionDescription, track *mediadevices.VideoTrack,
 		return nil, err
 	}
 	answerChan <- answerBody
+
+	<-connectedChan
 
 	return peerConnection, nil
 }
