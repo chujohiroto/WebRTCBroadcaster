@@ -202,7 +202,7 @@ func onConnect(offer *webrtc.SessionDescription, track *mediadevices.VideoTrack,
 	log.Println("Gathering Complete")
 
 	// Send Answer
-	answerBody, err := signal.Encode(answer)
+	answerBody, err := signal.Encode(*peerConnection.LocalDescription())
 	if err != nil {
 		return nil, err
 	}
