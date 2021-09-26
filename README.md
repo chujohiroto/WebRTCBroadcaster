@@ -46,19 +46,26 @@ Usage of ./WebRTCBroadcaster:
 
 **ダミー映像での実行例**
 ```shell
-./WebRTCBroadcaster -dummy -page
+./WebRTCBroadcaster -dummy
 ```
 
 **カメラから映像取得、認証Webhookありでの実行例**
 ```shell
-./WebRTCBroadcaster -page -webhook http://localhost:8888/auth
+./WebRTCBroadcaster -webhook http://localhost:8888/auth
 ```
 
 **1080p 60FPS 5Mbpsで配信したい場合の実行例**
 ```shell
-./WebRTCBroadcaster -page -framerate 60 -bitrate 5000000
+./WebRTCBroadcaster -framerate 60 -bitrate 5000000
 ```
 
+**ストリーミング閲覧方法 (ポートに指定がなく、-pageがfalseと指定されていない場合)**
+
+[http://localhost:8080/]()
+
+**画像閲覧方法 (ポートに指定がなく、-apiがfalseと指定されていない場合)**
+
+[http://localhost:8080/api/photo]()
 
 ## ビルド方法
 **Raspberry Piでハードウェアエンコーダを使用する場合は、本体に内臓されている [mmal](https://github.com/raspberrypi/userland/tree/master/interface/mmal) が必要です。**
@@ -91,6 +98,7 @@ go build
 ## 対応予定の機能
 - 録画HTTP API
 - カスタムできる閲覧ページのテンプレート
+- Linuxサービス化対応
 - 簡易なWeb SDK
 - 閲覧状況を確認できるダッシュボード、HTTP API
 - Rasberry Pi 3, 4のビルド済みバイナリの提供
