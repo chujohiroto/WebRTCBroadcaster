@@ -183,7 +183,6 @@ func onConnect(offer *webrtc.SessionDescription, track *mediadevices.VideoTrack,
 		log.Printf("Peer Connection State has changed: %s\n", s.String())
 
 		if s == webrtc.PeerConnectionStateFailed {
-			log.Println("PeerConnectionStateFailed")
 			peerConnection.Close()
 		}
 	})

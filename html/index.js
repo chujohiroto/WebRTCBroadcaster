@@ -28,6 +28,7 @@ window.createSession = () => {
     }
 
     pc.addTransceiver('video')
+
     pc.createOffer()
         .then(async d => {
             console.log(d)
@@ -36,6 +37,7 @@ window.createSession = () => {
         .catch(console.log)
 
     pc.ontrack = function (event) {
+        console.log(event)
         const el = document.getElementById('video1');
         el.srcObject = event.streams[0]
         el.autoplay = true
