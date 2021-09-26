@@ -45,6 +45,10 @@ window.createSession = () => {
         el.autoplay = true
         el.controls = true
     }
+
+    pc.onconnectionstatechange = event => {
+        console.log(pc.connectionState)
+    }
 }
 
 async function postData(url = '', data = {}) {
