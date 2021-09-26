@@ -7,7 +7,13 @@ window.createSession = () => {
             }
         ]
     })
+
+    pc.onconnectionstatechange = event => {
+        console.log(pc.connectionState)
+    }
+
     pc.oniceconnectionstatechange = _ => console.log(pc.iceConnectionState)
+
     pc.onicecandidate = async event => {
         if (event.candidate === null) {
             const answer = await postData("/sdp",
@@ -27,6 +33,14 @@ window.createSession = () => {
         }
     }
 
+    pc.ontrack = function (event) {
+        console.log(event)
+        const el = document.getElementById('video1');
+        el.srcObject = event.streams[0]
+        el.autoplay = true
+        el.controls = true
+    }
+
     pc.addTransceiver('video', {
         'direction': 'recvonly'
     })
@@ -37,18 +51,6 @@ window.createSession = () => {
             await pc.setLocalDescription(d)
         })
         .catch(console.log)
-
-    pc.ontrack = function (event) {
-        console.log(event)
-        const el = document.getElementById('video1');
-        el.srcObject = event.streams[0]
-        el.autoplay = true
-        el.controls = true
-    }
-
-    pc.onconnectionstatechange = event => {
-        console.log(pc.connectionState)
-    }
 }
 
 async function postData(url = '', data = {}) {
