@@ -2,7 +2,8 @@ package dummy
 
 import (
 	"github.com/pion/mediadevices"
-	"github.com/pion/mediadevices/pkg/codec/x264"
+	"github.com/pion/mediadevices/pkg/codec/mmal"
+	// "github.com/pion/mediadevices/pkg/codec/x264"
 	_ "github.com/pion/mediadevices/pkg/driver/videotest"
 	"github.com/pion/mediadevices/pkg/prop"
 	"github.com/pion/webrtc/v3"
@@ -10,12 +11,11 @@ import (
 )
 
 func GetCameraVideoTrack(width, height, bitrate int, framerate float64) (*mediadevices.VideoTrack, *webrtc.API) {
-	x264Params, _ := x264.NewParams()
-	x264Params.Preset = x264.PresetMedium
-	x264Params.BitRate = bitrate
+	mmalParams, _ := mmal.NewParams()
+	mmalParams.BitRate = bitrate
 
 	codecSelector := mediadevices.NewCodecSelector(
-		mediadevices.WithVideoEncoders(&x264Params),
+		mediadevices.WithVideoEncoders(&mmalParams),
 	)
 
 	mediaEngine := webrtc.MediaEngine{}
